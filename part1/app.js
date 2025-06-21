@@ -10,11 +10,11 @@ app.use(express.static(path.join(__dirname, '/public')));
 
 // Routes
 const dogRoutes = require('./routes/dogRoutes');
-const walkreguestRoutes = require('./routes/walkreguestRoutes');
+const walkrequestRoutes = require('./routes/walkrequestRoutes');
 const walkerRoutes = require('./routes/walkerRoutes');
 
 app.use('/api/dogs', dogRoutes);
-app.use('/api/walkrequests', walkreguestRoutes);
+app.use('/api/walkrequests', walkrequestRoutes);
 app.use('/api/walkers', walkerRoutes);
 
 // Export the app instead of listening here
