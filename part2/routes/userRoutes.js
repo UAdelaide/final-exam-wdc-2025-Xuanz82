@@ -48,10 +48,33 @@ router.post('/login', async (req, res) => {
     if (rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-
+    req.session.user = rows[0];
     res.json({ message: 'Login successful', user: rows[0] });
   } catch (error) {
     res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Logout route
+router.post('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    res.json({ message: 'Logged out' });
+  });
+});
+
+// Get all dogs for the logged-in owner
+router.get('/my-dogs', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'owner') {
+    return res.status(401).json({ error: 'Not authorized' });
+  }
+  try {
+    const [rows] = await db.query('SELECT dog_id, name FROM Dogs WHERE owner_id = ?', [req.session.user.user_id]);
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch dogs' });
   }
 });
 

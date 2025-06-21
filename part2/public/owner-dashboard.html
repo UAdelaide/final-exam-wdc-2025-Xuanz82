@@ -9,6 +9,9 @@
 </head>
 <body class="bg-light">
   <div id="app" class="container py-4">
+    <div class="d-flex justify-content-end mb-3">
+      <button class="btn btn-danger" onclick="logout()">Logout</button>
+    </div>
     <h1 class="mb-4 text-primary">Owner Dashboard</h1>
 
     <!-- Walk request form -->
@@ -19,8 +22,10 @@
       <div class="card-body">
         <form @submit.prevent="submitWalkRequest">
           <div class="mb-3">
-            <label class="form-label">Dog ID</label>
-            <input v-model="form.dog_id" type="number" class="form-control" required>
+            <label class="form-label">Dog</label>
+            <select v-model="form.dog_id" class="form-control" required>
+              <option v-for="dog in dogs" :value="dog.dog_id" :key="dog.dog_id">{{ dog.name }}</option>
+            </select>
           </div>
           <div class="mb-3">
             <label class="form-label">Requested Date & Time</label>
@@ -79,6 +84,21 @@
         const walks = ref([]);
         const message = ref('');
         const error = ref('');
+        const dogs = ref([]);
+        
+        async function getCurrentUser() {
+          try {
+            // server api get method
+            const res = await fetch('/api/users/me');
+            // fail
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}}`);
+            const user = await res.json();
+            return user; // { user_id, username, role }
+          } catch (err) {
+            console.error('Failed to get current user:', err);
+            return null;
+          }
+        }
 
         async function loadWalks() {
           try {
@@ -86,6 +106,15 @@
             walks.value = await res.json();
           } catch (err) {
             error.value = 'Failed to load walk requests';
+          }
+        }
+
+        async function loadDogs() {
+          try {
+            const res = await fetch('/api/users/my-dogs');
+            dogs.value = await res.json();
+          } catch (err) {
+            error.value = 'Failed to load dogs';
           }
         }
 
@@ -115,8 +144,18 @@
           }
         }
 
+        function logout() {
+          fetch('/api/users/logout', { method: 'POST' })
+            .then(() => {
+              // Remove session cookie by redirecting to login
+              window.location.href = 'index.html';
+            });
+        }
+
         onMounted(() => {
           loadWalks();
+          loadDogs();
+          getCurrentUser();
         });
 
         return {
@@ -124,7 +163,8 @@
           walks,
           message,
           error,
-          submitWalkRequest
+          submitWalkRequest,
+          dogs
         };
       }
     }).mount('#app');

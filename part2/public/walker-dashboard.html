@@ -9,6 +9,9 @@
 </head>
 <body class="bg-light">
   <div id="app" class="container py-4">
+    <div class="d-flex justify-content-end mb-3">
+      <button class="btn btn-danger" onclick="logout()">Logout</button>
+    </div>
     <h1 class="mb-4 text-success">Walker Dashboard</h1>
 
     <!-- Alert messages -->
@@ -72,6 +75,14 @@
             error.value = err.message;
             message.value = '';
           }
+        }
+
+        function logout() {
+          fetch('/api/users/logout', { method: 'POST' })
+            .then(() => {
+              // Remove session cookie by redirecting to login
+              window.location.href = 'index.html';
+            });
         }
 
         onMounted(() => {
